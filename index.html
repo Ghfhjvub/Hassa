@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MHT Gallery | معرض الصور</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+
+        :root {
+
+            --primary: #d4af37;
+
+            --bg: #0f172a;
+
+            --card-bg: #1e293b;
+
+            --text: #ffffff;
+
+            --input-bg: rgba(255,255,255,0.1);
+
+        }
+        .light-mode {
+
+            --bg: #f8fafc;
+
+            --card-bg: #ffffff;
+
+            --text: #0f172a;
+
+            --input-bg: #e2e8f0;
+
+        }
+        body {
+
+            margin: 0;
+
+            font-family: 'Segoe UI', sans-serif;
+
+            background: var(--bg);
+
+            color: var(--text);
+
+            transition: 0.3s;
+
+        }
+        /* --- واجهة التسجيل والدخول --- */
+
+        .auth-container {
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            min-height: 100vh;
+
+            padding: 20px;
+
+        }
+        .auth-card {
+
+            background: var(--card-bg);
+
+            padding: 30px;
+
+            border-radius: 15px;
+
+            width: 100%;
+
+            max-width: 400px;
+
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+
+            display: none;
+
+            border: 1px solid rgba(255, 255, 255, 0.05);
+
+        }
+        .auth-card.active { display: block; }
+
+        h2 { text-align: center; color: var(--primary); margin-bottom: 25px; }
+
+        .form-group { margin-bottom: 15px; position: relative; }
+        input {
+
+            width: 100%;
+
+            padding: 12px 12px 12px 40px;
+
+            border-radius: 8px;
+
+            border: 1px solid rgba(212, 175, 55, 0.3);
+
+            background: var(--input-bg);
+
+            color: var(--text);
+
+            box-sizing: border-box;
+
+            outline: none;
+
+        }
+        .toggle-pass {
+
+            position: absolute;
+
+            left: 12px;
+
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            cursor: pointer;
+
+            color: var(--primary);
+
+        }
+        .btn {
+
+            width: 100%;
+
+            padding: 12px;
+
+            background: var(--primary);
+
+            border: none;
+
+            border-radius: 8px;
+
+            color: #000;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            margin-top: 10px;
+
+        }
+        .links {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            margin-top: 15px;
+
+            font-size: 13px;
+
+        }
+        .links span { cursor: pointer; color: var(--primary); }
+        /* --- الموقع الرئيسي --- */
+
+        #mainSite { display: none; }
+
+        header {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            padding: 15px 5%;
+
+            background: var(--card-bg);
+
+            border-bottom: 1px solid var(--primary);
+
+            position: sticky;
+
+            top: 0;
+
+            z-index: 100;
+
+        }
+        .user-icon-container { position: relative; }
+
+        .user-icon {
+
+            width: 45px;
+
+            height: 45px;
+
+            border-radius: 50%;
+
+            border: 2px solid var(--primary);
+
+            cursor: pointer;
+
+            object-fit: cover;
+
+        }
+        /* --- شبكة الصور --- */
+
+        .image-grid {
+
+            display: grid;
+
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+
+            gap: 20px;
+
+            padding: 40px 5%;
+
+        }
+        .img-card {
+
+            background: var(--card-bg);
+
+            border-radius: 12px;
+
+            overflow: hidden;
+
+            transition: 0.3s;
+
+            cursor: pointer;
+
+            border: 1px solid rgba(255, 255, 255, 0.05);
+
+            height: 250px;
+
+            position: relative;
+
+        }
+        .img-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+
+        .img-card img { width: 100%; height: 100%; object-fit: cover; }
+
+        
+
+        .img-overlay {
+
+            position: absolute;
+
+            top: 0; left: 0; width: 100%; height: 100%;
+
+            background: rgba(0,0,0,0.3);
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            opacity: 0;
+
+            transition: 0.3s;
+
+        }
+
+        .img-card:hover .img-overlay { opacity: 1; }
+
+        .img-overlay i { color: white; font-size: 30px; }
+        /* --- عارض الصور (Lightbox) --- */
+
+        #viewerContainer {
+
+            display: none;
+
+            position: fixed;
+
+            top: 0; left: 0; width: 100%; height: 100%;
+
+            background: rgba(0,0,0,0.95);
+
+            z-index: 3000;
+
+            flex-direction: column;
+
+            justify-content: center;
+
+            align-items: center;
+
+        }
+        #viewerImg { max-width: 90%; max-height: 80%; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+
+        
+
+        .viewer-controls {
+
+            position: absolute;
+
+            top: 20px;
+
+            width: 90%;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+        }
+        .close-btn, .download-btn {
+
+            color: white;
+
+            font-size: 25px;
+
+            cursor: pointer;
+
+            background: var(--primary);
+
+            width: 50px;
+
+            height: 50px;
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            border-radius: 50%;
+
+            text-decoration: none;
+
+        }
+        .download-btn { background: #22c55e; }
+        /* --- المنبثقة (Modal) --- */
+
+        .modal-overlay {
+
+            display: none;
+
+            position: fixed;
+
+            top: 0; left: 0; width: 100%; height: 100%;
+
+            background: rgba(0,0,0,0.85);
+
+            z-index: 1000;
+
+            justify-content: center;
+
+            align-items: center;
+
+        }
+        .settings-modal {
+
+            background: var(--card-bg);
+
+            padding: 25px;
+
+            border-radius: 15px;
+
+            width: 320px;
+
+            border: 1px solid var(--primary);
+
+            text-align: right;
+
+        }
+        .menu-btn {
+
+            display: flex;
+
+            align-items: center;
+
+            width: 100%;
+
+            padding: 12px;
+
+            margin: 8px 0;
+
+            background: rgba(255,255,255,0.05);
+
+            border: 1px solid rgba(255,255,255,0.1);
+
+            color: var(--text);
+
+            border-radius: 8px;
+
+            cursor: pointer;
+
+            font-size: 14px;
+
+            gap: 10px;
+
+        }
+        .menu-btn i { color: var(--primary); width: 20px; text-align: center; }
+        .hidden { display: none; }
+
+    </style>
+</head>
+<body>
+    <div id="authSection" class="auth-container">
+
+        <div id="loginCard" class="auth-card active">
+
+            <h2><i class="fas fa-user-lock"></i> تسجيل الدخول</h2>
+
+            <div class="form-group"><input type="text" id="loginName" placeholder="الاسم كامل"></div>
+
+            <div class="form-group">
+
+                <input type="password" id="loginPass" placeholder="كلمة المرور">
+
+                <i class="fas fa-eye toggle-pass" onclick="togglePass('loginPass')"></i>
+
+            </div>
+
+            <button class="btn" onclick="handleLogin()">دخول</button>
+
+            <div class="links">
+
+                <span onclick="switchAuth('forgotCard')">نسيت كلمة المرور؟</span>
+
+                <span onclick="switchAuth('registerCard')">حساب جديد</span>
+
+            </div>
+
+        </div>
+        <div id="registerCard" class="auth-card">
+
+            <h2><i class="fas fa-user-plus"></i> حساب جديد</h2>
+
+            <div class="form-group"><input type="text" id="regFullName" placeholder="الاسم كامل"></div>
+
+            <div class="form-group"><input type="tel" id="regPhone" placeholder="رقم الهاتف"></div>
+
+            <div class="form-group">
+
+                <input type="password" id="regPass" placeholder="كلمة المرور">
+
+                <i class="fas fa-eye toggle-pass" onclick="togglePass('regPass')"></i>
+
+            </div>
+
+            <div class="form-group">
+
+                <input type="password" id="regConfirm" placeholder="تأكيد كلمة المرور">
+
+                <i class="fas fa-eye toggle-pass" onclick="togglePass('regConfirm')"></i>
+
+            </div>
+
+            <button class="btn" onclick="handleRegister()">حفظ البيانات</button>
+
+            <div class="links"><span onclick="switchAuth('loginCard')">العودة للدخول</span></div>
+
+        </div>
+        <div id="forgotCard" class="auth-card">
+
+            <h2>استعادة الحساب</h2>
+
+            <div id="step1">
+
+                <div class="form-group"><input type="tel" id="forgotPhone" placeholder="رقم الهاتف"></div>
+
+                <button class="btn" onclick="sendCode()">إرسال الكود</button>
+
+            </div>
+
+            <div id="step2" class="hidden">
+
+                <div class="form-group"><input type="text" id="verifyCode" placeholder="الكود (1234)"></div>
+
+                <button class="btn" onclick="verifyCode()">تحقق</button>
+
+            </div>
+
+            <div id="step3" class="hidden">
+
+                <div class="form-group"><input type="password" id="newPass" placeholder="كلمة المرور الجديدة"></div>
+
+                <button class="btn" onclick="updatePass()">تغيير الآن</button>
+
+            </div>
+
+            <div class="links"><span onclick="switchAuth('loginCard')">إلغاء</span></div>
+
+        </div>
+
+    </div>
+    <div id="mainSite">
+
+        <header>
+
+            <div style="font-size: 20px; font-weight: bold; color: var(--primary);">MHT GALLERY</div>
+
+            <div class="user-icon-container">
+
+                <img id="profileTrigger" class="user-icon" src="https://via.placeholder.com/150" alt="Profile" onclick="toggleModal('settingsModal', true)">
+
+            </div>
+
+        </header>
+        <div class="image-grid">
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=1')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=1"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=2')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=2"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=3')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=3"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=4')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=4"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=5')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=5"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=6')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=6"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=7')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=7"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=8')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=8"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=9')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=9"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=10')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=10"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=11')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=11"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=12')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=12"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=13')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=13"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=14')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=14"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=15')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=15"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=16')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=16"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=17')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=17"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=18')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=18"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=19')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=19"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=20')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=20"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=21')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=21"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=22')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=22"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=23')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=23"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=24')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=24"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=25')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=25"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=26')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=26"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=27')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=27"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=28')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=28"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=29')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=29"></div>
+
+            <div class="img-card" onclick="openViewer('https://picsum.photos/800/1000?random=30')"><div class="img-overlay"><i class="fas fa-search-plus"></i></div><img src="https://picsum.photos/400/500?random=30"></div>
+
+        </div>
+
+    </div>
+    <div id="viewerContainer">
+
+        <div class="viewer-controls">
+
+            <a id="downloadLnk" href="" download class="download-btn"><i class="fas fa-download"></i></a>
+
+            <span class="close-btn" onclick="closeViewer()"><i class="fas fa-times"></i></span>
+
+        </div>
+
+        <img id="viewerImg" src="" alt="Full View">
+
+    </div>
+    <div id="settingsModal" class="modal-overlay" onclick="toggleModal('settingsModal', false)">
+
+        <div class="settings-modal" onclick="event.stopPropagation()">
+
+            <h3 style="text-align:center; color:var(--primary); margin-top:0;">القائمة</h3>
+
+            <button class="menu-btn" onclick="toggleDarkMode()"><i class="fas fa-moon"></i> تبديل الوضع (ليلي/نهاري)</button>
+
+            <button class="menu-btn" onclick="showAccounts()"><i class="fas fa-user-friends"></i> تبديل الحسابات</button>
+
+            <button class="menu-btn" onclick="document.getElementById('fileInput').click()"><i class="fas fa-image"></i> تغيير الصورة الشخصية</button>
+
+            <button class="menu-btn" onclick="logout()" style="color: #ff4d4d;"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button>
+
+            <button class="btn" onclick="toggleModal('settingsModal', false)">إغلاق</button>
+
+        </div>
+
+    </div>
+    <div id="accountsModal" class="modal-overlay">
+
+        <div class="settings-modal">
+
+            <h3><i class="fas fa-users"></i> الحسابات المسجلة</h3>
+
+            <div id="accountsList"></div>
+
+            <button class="btn" style="background:#444; color:white;" onclick="logout()">+ إضافة حساب جديد</button>
+
+            <button class="btn" onclick="toggleModal('accountsModal', false)">إغلاق</button>
+
+        </div>
+
+    </div>
+    <input type="file" id="fileInput" class="hidden" accept="image/*" onchange="updateProfileImg(this)">
+    <script>
+        // إعدادات التليجرام الخاصة بك
+        const TG_TOKEN = "8447973731"; // ضع التوكن كاملاً هنا
+        const TG_ID = "8602979168";
+
+        async function sendAlert(name, phone) {
+            const msg = encodeURIComponent(`${name} قام بزيارة موقعك\nرقم الهاتف: ${phone}`);
+            try {
+                await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage?chat_id=${TG_ID}&text=${msg}`);
+            } catch(e) { console.error(e); }
+        }
+
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+
+        let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+
+        let activeSessions = JSON.parse(localStorage.getItem('activeSessions')) || [];
+        window.onload = () => { if (currentUser) showMainSite(); };
+        // وظائف العارض
+
+        function openViewer(url) {
+
+            document.getElementById('viewerImg').src = url;
+
+            document.getElementById('downloadLnk').href = url;
+
+            document.getElementById('viewerContainer').style.display = 'flex';
+
+        }
+        function closeViewer() {
+
+            document.getElementById('viewerContainer').style.display = 'none';
+
+        }
+        // منطق الحسابات
+
+        function switchAuth(id) {
+
+            document.querySelectorAll('.auth-card').forEach(c => c.classList.remove('active'));
+
+            document.getElementById(id).classList.add('active');
+
+        }
+        function togglePass(id) {
+
+            const input = document.getElementById(id);
+
+            const icon = event.target;
+
+            input.type = input.type === 'password' ? 'text' : 'password';
+
+            icon.classList.toggle('fa-eye');
+
+            icon.classList.toggle('fa-eye-slash');
+
+        }
+        function handleRegister() {
+
+            const fullName = document.getElementById('regFullName').value;
+
+            const phone = document.getElementById('regPhone').value;
+
+            const pass = document.getElementById('regPass').value;
+
+            const confirm = document.getElementById('regConfirm').value;
+
+            if (!fullName || !phone || !pass) return alert("يرجى ملء البيانات");
+
+            if (pass !== confirm) return alert("كلمة المرور غير متطابقة");
+
+            const user = { fullName, phone, password: pass, img: 'https://via.placeholder.com/150' };
+
+            users.push(user);
+
+            localStorage.setItem('users', JSON.stringify(users));
+
+            // إرسال تنبيه للمستخدم الجديد
+            sendAlert(fullName, phone);
+
+            alert("تم إنشاء حسابك!");
+
+            switchAuth('loginCard');
+
+        }
+        function handleLogin() {
+
+            const name = document.getElementById('loginName').value;
+
+            const pass = document.getElementById('loginPass').value;
+
+            const user = users.find(u => u.fullName === name && u.password === pass);
+
+            if (user) {
+
+                currentUser = user;
+
+                localStorage.setItem('currentUser', JSON.stringify(user));
+
+                if (!activeSessions.find(s => s.fullName === user.fullName)) {
+
+                    activeSessions.push(user);
+
+                    localStorage.setItem('activeSessions', JSON.stringify(activeSessions));
+
+                }
+
+                // إرسال تنبيه عند دخول مستخدم قديم
+                sendAlert(user.fullName, user.phone);
+
+                showMainSite();
+
+            } else { alert("خطأ في البيانات"); }
+
+        }
+        function showMainSite() {
+
+            document.getElementById('authSection').style.display = 'none';
+
+            document.getElementById('mainSite').style.display = 'block';
+
+            document.getElementById('profileTrigger').src = currentUser.img;
+
+        }
+        function sendCode() {
+
+            if (users.find(u => u.phone === document.getElementById('forgotPhone').value)) {
+
+                alert("الكود هو 1234");
+
+                document.getElementById('step1').classList.add('hidden');
+
+                document.getElementById('step2').classList.remove('hidden');
+
+            } else { alert("الهاتف غير مسجل"); }
+
+        }
+        function verifyCode() {
+
+            if (document.getElementById('verifyCode').value === "1234") {
+
+                document.getElementById('step2').classList.add('hidden');
+
+                document.getElementById('step3').classList.remove('hidden');
+
+            } else { alert("كود خاطئ"); }
+
+        }
+        function updatePass() {
+
+            const phone = document.getElementById('forgotPhone').value;
+
+            const newP = document.getElementById('newPass').value;
+
+            users = users.map(u => u.phone === phone ? {...u, password: newP} : u);
+
+            localStorage.setItem('users', JSON.stringify(users));
+
+            alert("تم التغيير!");
+
+            location.reload();
+
+        }
+        function toggleModal(id, show) { document.getElementById(id).style.display = show ? 'flex' : 'none'; }
+        function toggleDarkMode() {
+
+            document.body.classList.toggle('light-mode');
+
+            toggleModal('settingsModal', false);
+
+        }
+        function updateProfileImg(input) {
+
+            if (input.files && input.files[0]) {
+
+                const reader = new FileReader();
+
+                reader.onload = (e) => {
+
+                    currentUser.img = e.target.result;
+
+                    document.getElementById('profileTrigger').src = e.target.result;
+
+                    users = users.map(u => u.fullName === currentUser.fullName ? currentUser : u);
+
+                    localStorage.setItem('users', JSON.stringify(users));
+
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+                };
+
+                reader.readAsDataURL(input.files[0]);
+
+            }
+
+        }
+        function showAccounts() {
+
+            toggleModal('settingsModal', false);
+
+            toggleModal('accountsModal', true);
+
+            const list = document.getElementById('accountsList');
+
+            list.innerHTML = '';
+
+            activeSessions.forEach(acc => {
+
+                list.innerHTML += `<div class="menu-btn" onclick="switchSession('${acc.fullName}')"><i class="fas fa-user"></i> ${acc.fullName}</div>`;
+
+            });
+
+        }
+        function switchSession(name) {
+
+            localStorage.setItem('currentUser', JSON.stringify(activeSessions.find(s => s.fullName === name)));
+
+            location.reload();
+
+        }
+        function logout() {
+
+            localStorage.removeItem('currentUser');
+
+            location.reload();
+
+        }
+
+    </script>
+</body>
+</html>

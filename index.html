@@ -557,10 +557,17 @@
 
         </div>
 
-<div style="text-align: center; margin-top: 20px;">
-    <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fmustafa-hassan-taha&count_bg=%23D4AF37&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Visitors&edge_flat=false" alt="Visitor Counter"/>
+<div style="text-align: center; font-family: Arial, sans-serif; direction: rtl; margin-top: 20px;">
+    <span style="font-size: 1.2em; color: #555;">عدد الزيارات: </span>
+    <span id="visits" style="font-size: 1.5em; font-weight: bold; color: #D4AF37;">...</span>
 </div>
 
+<script>
+    function cb(response) {
+        document.getElementById('visits').innerText = response.value;
+    }
+</script>
+<script async src="https://api.countapi.xyz/hit/mustafa-hassan-taha-site/visits?callback=cb"></script>
 
         
     </div>
